@@ -1,8 +1,0 @@
-Para utilizar o github os principais comandos são:
-
-git clone <repo url> # Gerar uma copia do repositorio
-git add <file> # todas as inclusões e modificações de vem ser adicionadas
-git commit     # Para descrever as mudanças
-git push <repo url> # Para enviar as mudanças ao repositorio 
-
-https://github.com/luziaromanetto/patefy
