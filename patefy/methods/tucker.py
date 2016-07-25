@@ -34,7 +34,7 @@ class Alttucker(object):
 					# Nonnegativity constraint
 					In[n] = Rn
 
-					nmf = nimfa.Nmf(Cn, seed="nndsvd", max_iter=10000, rank=Rn, update='euclidean', objective='fro')
+					nmf = nimfa.Nmf(Cn, seed="nndsvd", max_iter=500, rank=Rn, update='euclidean', objective='fro')
 					nmf_fit = nmf()
 
 					Bi = nmf_fit.basis()
