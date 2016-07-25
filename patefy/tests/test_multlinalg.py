@@ -4,8 +4,9 @@ import math
 
 import patefy
 import patefy.utils.multlinalg as MLA
+import patefy.methods.tucker as TKD
 
-class MLATester(unittest.TestCase):
+class MLATester(unittest.TestCase):	
 	def test_inner_zeros(self):
 		I = [2, 3, 4]
 		
@@ -102,6 +103,14 @@ class MLATester(unittest.TestCase):
 		G = np.random.rand(R)
 		
 		assert abs( np.sum(MLA.kruskal_operator(G, [A, B, C])) - np.sum(G)*1000) < 10e-8
+		
+	def test_khatri_rao(self):
+		A = np.ones( [5, 4], dtype=float)
+		B = np.ones( [10, 4], dtype=float)
+		
+		C = MLA.khatri_rao(A, B)
+		
+		assert np.sum(C) == 200
 						
 if __name__ == "__main__":
 	unittest.main()

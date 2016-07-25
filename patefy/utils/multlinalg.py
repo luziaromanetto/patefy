@@ -1,4 +1,5 @@
 import numpy as np
+from numpy import linalg as LA
 import math
 
 class TensorIterator:	
@@ -46,8 +47,7 @@ def inner(X, Y):
 
 def norm(X):
 	# Frobenius norm for nway
-	result = np.sum(np.multiply(X,X))	
-	return math.sqrt(result)
+	return LA.norm(X)
 
 def tucker_operator(core, facts):
 	# TODO: check the dimension match
@@ -82,12 +82,60 @@ def hadamard(A, B):
 	# TODO: check the dimension match
 	return np.multiply(A, B)
 	
-# -------------------------------------------------------------------- #
-# TODO:
-def kronecker(A, B):
-	pass
-	
-def khatri_rao(A, B):
-	pass
-	
+def kron(A, B):
+	# Produto de kroniker
+	return np.kron(A, B)
 
+def khatri_rao(A, B):
+	# TODO: check the dimension match
+	J = A.shape[1]
+	
+	T = []
+	for j in range(J):
+		colj = kron( A[:,j], B[:,j] )
+		T.append(colj)
+
+	return np.asarray(T).transpose()
+	
+def unfold(T, mod):
+	I = T.shape
+	order = len(I)
+
+	N = I[mod];
+	M = 1;
+
+	for i in range(order):
+		if not i==mod:
+			M = M*I[i];
+			
+	C = np.zeros( (N,M) , dtype='float64')
+	for idx in TensorIterator(I):
+		i = idx[mod]
+		j = getJ(idx, mod, I)
+		
+		C[i,j]=T[idx]
+		
+	return C
+	
+def refold(C, mod, I):
+	order = len(I)
+	T = np.zeros( I, dtype='float64')
+
+	for idx in TensorIterator(I):
+		i = idx[mod]
+		j = getJ( idx, mod, I)
+		T[idx] = C[i,j]
+		
+	return T
+		
+def getJ(idAct, mod, I):
+	order = len(I)
+	j=0;
+	for k in range(order):
+		if( k!= mod ):
+			Jk = 1;
+			for m in range(k):
+				if( m != mod):
+					Jk = Jk*I[m]
+			j=j+idAct[k]*Jk;
+	return j
