@@ -54,16 +54,17 @@ class Alttucker(object):
 						H[k,:] = H[k,:]*nBk
 
 					B.append(Bi)
+					print "."
 					TCn = MLA.refold(H, n, tuple(In))
 
 		self.B = B
 		self.C = TCn
 
-	def errornp(self):
-		D = self.T - MLA.tucker_operator( self.C, self.B );
+	def error(self):
+		D = self.T - MLA.tucker_operator2( self.C, self.B );
 		return MLA.norm( D )/MLA.norm(self.T)
 	
-	def error(self):	
+	def error_old(self):
 		I = self.I
 		R = self.R
 		N = self.N

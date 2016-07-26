@@ -62,6 +62,26 @@ def tucker_operator(core, facts):
 		T += core[r]*outer(vects)
 		
 	return T
+
+def tucker_operator2(core, facts):
+	# TODO: check the dimension match
+	R = core.shape
+	N = len(R)
+	I = [ facts[n].shape[0] for n in range(N) ]
+	
+	Tn = core
+	Rn = list(R)
+	
+	for n in range(N):
+		Bn = facts[n]
+		Cn = unfold(Tn, n)
+		
+		Mn = np.dot(Bn, Cn)
+		Rn[n] = I[n]
+		
+		Tn = refold(Mn, n, tuple(Rn))
+			
+	return Tn
 	
 def kruskal_operator(sigma, facts):
 	# TODO: check the dimension match
