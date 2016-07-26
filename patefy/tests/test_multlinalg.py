@@ -7,6 +7,53 @@ import patefy.utils.multlinalg as MLA
 import patefy.methods.tucker as TKD
 
 class MLATester(unittest.TestCase):	
+	def test_refold_refold_3(self):
+		I = tuple([2,3,4,5])
+		
+		T = np.arange(120).reshape(I)
+		
+		M = MLA.unfold2(T, 3)
+		newT = MLA.refold2(M, 3, I)
+		
+	
+	def test_unfold_refold_1(self):
+		I = tuple([2,3,4,5])
+		
+		T = np.arange(120).reshape(I)
+		
+		M = MLA.unfold2(T, 1)
+		newT = MLA.refold2(M, 1, I)
+		
+		dif = MLA.norm( T-newT )
+		assert dif < 10e-6
+		
+	def test_unfold_refold_0(self):
+		I = tuple([2,3,4,5])
+		T = np.arange(120).reshape(I);
+	
+		M = MLA.unfold2(T, 0)
+		newT2 = MLA.refold2(M, 0, I)
+		
+		dif = MLA.norm( T - newT2 )
+		
+		assert dif < 10e-6
+
+	def test_unfold_refold_2(self):
+		I = tuple([2,3,4,5])
+		T = np.arange(120).reshape(I);
+	
+		M = MLA.unfold2(T, 2)
+		newT2 = MLA.refold2(M, 2, I)
+		
+		dif = MLA.norm( T - newT2 )
+		
+		assert dif < 10e-6
+		
+	def test_swap(self):
+		T = np.arange(120).reshape([2,3,4,5])
+	
+		newT = MLA.swap( T, [1, 0, 3, 2] )
+	
 	def test_inner_zeros(self):
 		I = [2, 3, 4]
 		

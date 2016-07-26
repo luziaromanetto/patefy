@@ -58,11 +58,11 @@ class Tensor(object):
 		fin = open(directory+'/'+fileValues);
 		self.data = np.zeros(self.shape);
 
+		print self.shape
 		for line in fin:
 			entries = line.split()
 			ids = [ int(v) for v in entries[0:self.order] ]
 			self.data[tuple(ids)] = float(entries[self.order])
-
 
 	def write_json(self,fileName):
 		print("Saida JSON: "+fileName);

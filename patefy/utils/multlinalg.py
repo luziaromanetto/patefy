@@ -57,6 +57,7 @@ def tucker_operator(core, facts):
 	
 	T = np.zeros(I, dtype=float)
 	for r in TensorIterator(R):
+		#print r
 		vects = [ facts[n][:,r[n]] for n in range(N) ]
 		T += core[r]*outer(vects)
 		
@@ -97,7 +98,7 @@ def khatri_rao(A, B):
 
 	return np.asarray(T).transpose()
 	
-def unfold(T, mod):
+def unfold_old(T, mod):
 	I = T.shape
 	order = len(I)
 
@@ -109,7 +110,7 @@ def unfold(T, mod):
 			M = M*I[i];
 			
 	C = np.zeros( (N,M) , dtype='float64')
-	for idx in TensorIterator(I):
+	for idx in np.ndindex(I):
 		i = idx[mod]
 		j = getJ(idx, mod, I)
 		
@@ -117,17 +118,74 @@ def unfold(T, mod):
 		
 	return C
 	
+def unfold(T, mod):
+	I = T.shape
+	N = len(I)
+	
+	cmodes = [ v for v in range(N) if v != mod ]
+	order = np.concatenate(([mod],cmodes))
+	
+	newT = swap(T, order)
+	
+	return newT.reshape( [I[mod] , np.asarray([I[m] for m in cmodes ]).prod() ])
+	
 def refold(C, mod, I):
-	order = len(I)
-	T = np.zeros( I, dtype='float64')
+	N = len(I)
+	newC = C.copy()
+	
+	cmodes = [ i for i in range(N) if i != mod ] 
+	order = list(np.concatenate(([mod],cmodes)))
+	
+	In = [ I[o] for o in order ]
+		
+	newT = np.reshape( np.asarray(newC), In )
+	
+	neworder = [ order.index(i) for i in range(N) ]	
+	
+	if mod != 0 :
 
-	for idx in TensorIterator(I):
+		newT = swap(newT, neworder)
+		
+	return newT
+	
+	
+def swap(T, order):
+	I = T.shape
+	N = len(I)
+	
+	if( len(order) != N ):
+		raise ValueError("Invalid swap order");
+	
+	if( type(order) == list ):
+		order = np.asarray(order)
+		
+	neworder = list(np.arange(N))
+	newT = T.copy()
+	
+	
+	for i in range(N-1):
+		idx = neworder.index(order[i])
+		
+		newT = newT.swapaxes(i,idx)
+		
+		temp = neworder[i];
+		neworder[i] = neworder[idx];
+		neworder[idx] = temp;
+	
+	return newT
+
+def refold_old(C, mod, I):
+	order = len(I)
+	T = np.zeros(I, dtype='float64')
+
+	for idx in np.ndindex(I):
 		i = idx[mod]
 		j = getJ( idx, mod, I)
 		T[idx] = C[i,j]
 		
 	return T
-		
+	
+	
 def getJ(idAct, mod, I):
 	order = len(I)
 	j=0;
