@@ -6,19 +6,11 @@ from sklearn.decomposition import TruncatedSVD
 
 import patefy
 import patefy.utils.multlinalg as MLA
+from patefy.models.tucker import TKD
 
 from numpy import linalg as LA
-
-class Alttucker(object):
 	
-	def __init__(self, T, facts, ConstrF):
-		self.T = T
-		self.C = None
-		self.B = None
-		self.R = facts
-		self.I = T.shape # talvez mudar I e N para uma superclasse Tensor
-		self.N = len(T.shape)
-		self.constrB = ConstrF
+class Alttucker(TKD):
 		
 	def __call__(self):
 		TCn = self.T
@@ -60,66 +52,9 @@ class Alttucker(object):
 
 		self.B = B
 		self.C = TCn
+		self.err = None
 
-	def error(self):
-		D = self.T - MLA.tucker_operator( self.C, self.B );
-		return MLA.norm( D )/MLA.norm(self.T)
-	
-	def error_old(self):
-		I = self.I
-		R = self.R
-		N = self.N
-		result = 0
-		Tn = 0
-
-		for idAct in np.ndindex(I):
-			Til = 0
-			for coreIdAct in MLA.TensorIterator(R):
-				cr = self.C[coreIdAct]
-				for n in range(N):
-					cr = cr*(self.B[n][ tuple([idAct[n] ,coreIdAct[n]]) ])
-				
-				Til = Til + cr;
-			
-			result += (Til-self.T[idAct])**2
-			Tn += (self.T[idAct])**2
-
-		Tn = math.sqrt(Tn)
-		return math.sqrt(result)/Tn
-
-	def pivotComponents(self, pivOrder, reverse=False):
-
-		if( reverse == True ):
-			pivOrder = [ p.reverse() for p in pivOrder ]
-
-		for i in range(len(pivOrder)):
-			Bi = np.array( self.B[i] , dtype='float64')
-			Bpi = np.array( self.B[i] , dtype='float64')
-
-			for j in range(len(pivOrder[i])):
-				for k in range(len(self.B[i])):
-					Bpi[k][j] = Bi[k][pivOrder[i][j]] 
-
-			self.B[i]=Bpi
-
-			Cp = np.zeros( self.R, dtype='float64')
-			for idAct in np.ndindex(tuple(self.R)):
-				idActOrd = tuple([ pivOrder[i][idAct[i]] for i in range(len(pivOrder)) ])
-
-				Cp[idAct]=self.C[idActOrd]
-				
-		self.C = Cp;
-
-class HOSVD(object):
-	
-	def __init__(self, T, facts, ConstrF):
-		self.T = T
-		self.C = None
-		self.B = None
-		self.R = facts
-		self.I = T.shape # talvez mudar I e N para uma superclasse Tensor
-		self.N = len(T.shape)
-		self.constrB = ConstrF
+class HOOI(TKD):
 	
 	def __call__(self, kmax = 10):
 		T = self.T
@@ -141,18 +76,36 @@ class HOSVD(object):
 				X = MLA.tucker_operator( T, B_order, order )
 				Y = MLA.unfold(X, n)
 			
-				svd.fit(Y.transpose())
+				svd.fit(np.transpose(Y))
 				
-				B[n] = svd.components_.transpose()
+				B[n] = np.transpose(svd.components_)
 				if n < N-1 :
 					order[n]=n
-					B_order[n] = B[n].transpose()
+					B_order[n] = np.transpose(B[n])
 				
-			G = MLA.tucker_operator( T, [ b.transpose() for b in B] )
+			G = MLA.tucker_operator( T, [ np.transpose(b) for b in B] )
 			
 		self.C = G
 		self.B = B
+		self.err = None		
+
+class HOSVD(TKD):
+	# Original Tucker method
+	def __call__(self):		
+		T = self.T
+		B = list()
+		I = self.I
+		R = self.R
+		N = len(I)
+
+		for n in range(N):			
+			Y = MLA.unfold(T, n)
 			
-	def error(self):
-		D = self.T - MLA.tucker_operator( self.C, self.B );
-		return MLA.norm( D )/MLA.norm(self.T)
+			svd = TruncatedSVD(n_components=R[n], random_state=42)
+			svd.fit(np.transpose(Y))
+			B.append(np.transpose(svd.components_))
+
+		G = MLA.tucker_operator( T, [ np.transpose(b) for b in B] )
+		self.C = G
+		self.B = B
+		self.err = None

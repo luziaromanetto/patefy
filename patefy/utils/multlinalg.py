@@ -19,7 +19,7 @@ def outer( vects ):
 	return T
 
 def inner(X, Y):
-	# TODO: check the dimension match
+	# TODO: check the dimension match	
 	return np.sum(np.multiply(X,Y))
 
 def norm(X):
