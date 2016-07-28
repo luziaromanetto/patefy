@@ -2,38 +2,15 @@ import numpy as np
 from numpy import linalg as LA
 import math
 
-class TensorIterator:	
-	def __init__(self, I):
-		self.I = I
-		self.N = len(I)
-		self.idx = None
-	
-	def __iter__(self):
-		return self
-	
-	def next(self):
-		if self.idx is None :
-			self.idx = np.zeros(self.N, dtype=int)
-			return tuple(self.idx)
-		
-		for i in range(self.N-1,-1,-1) :
-			if( self.idx[i] < (self.I[i]-1) ) :
-				self.idx[i] +=1
-				return tuple(self.idx)
-			else :
-				self.idx[i] = 0
-		if( np.sum(self.idx) > 0 ):
-			return tuple(self.idx)
-		else :
-			raise StopIteration()
+# TODO : mudar a identacao de tab para espacos
 
 def outer( vects ):
 	N = len(vects)
 	
-	I = [len(v) for v in vects ]
+	I = tuple([len(v) for v in vects ])
 	T = np.zeros(I, dtype=float)
 	
-	for i in TensorIterator(I):
+	for i in np.ndindex(I):
 		value = 1
 		for n in range(N):
 			value *= vects[n][i[n]]
@@ -49,37 +26,46 @@ def norm(X):
 	# Frobenius norm for nway
 	return LA.norm(X)
 
-def tucker_operator(core, facts):
+def tucker_operator2(core, facts):
 	# TODO: check the dimension match
-	R = core.shape
+	R = tuple(core.shape)
 	N = len(R)
 	I = [ facts[n].shape[0] for n in range(N) ]
 	
 	T = np.zeros(I, dtype=float)
-	for r in TensorIterator(R):
+	for r in np.ndindex(R):
 		#print r
 		vects = [ facts[n][:,r[n]] for n in range(N) ]
 		T += core[r]*outer(vects)
 		
 	return T
 
-def tucker_operator2(core, facts):
+def tucker_operator(core, facts, order = None):
 	# TODO: check the dimension match
 	R = core.shape
 	N = len(R)
-	I = [ facts[n].shape[0] for n in range(N) ]
+	
+	if order is None:
+		order = range(N)			
+			
+	if len(facts) != len(order):
+		raise ValueError("Invalid number of factors")
+			
+	for n in range(len(order)):
+		if facts[n].shape[1] != R[order[n]] :
+			raise ValueError("Invalid component number in factor "+str(n)+" - ("+str(facts[n].shape[1])+","+str(R[order[n]])+")")
 	
 	Tn = core
 	Rn = list(R)
 	
-	for n in range(N):
+	for n in range(len(order)):
 		Bn = facts[n]
-		Cn = unfold(Tn, n)
+		Cn = unfold(Tn, order[n])
 		
 		Mn = np.dot(Bn, Cn)
-		Rn[n] = I[n]
+		Rn[order[n]] = facts[n].shape[0]
 		
-		Tn = refold(Mn, n, tuple(Rn))
+		Tn = refold(Mn, order[n], tuple(Rn))
 			
 	return Tn
 	
@@ -118,26 +104,6 @@ def khatri_rao(A, B):
 
 	return np.asarray(T).transpose()
 	
-def unfold_old(T, mod):
-	I = T.shape
-	order = len(I)
-
-	N = I[mod];
-	M = 1;
-
-	for i in range(order):
-		if not i==mod:
-			M = M*I[i];
-			
-	C = np.zeros( (N,M) , dtype='float64')
-	for idx in np.ndindex(I):
-		i = idx[mod]
-		j = getJ(idx, mod, I)
-		
-		C[i,j]=T[idx]
-		
-	return C
-	
 def unfold(T, mod):
 	I = T.shape
 	N = len(I)
@@ -157,24 +123,20 @@ def refold(C, mod, I):
 	order = list(np.concatenate(([mod],cmodes)))
 	
 	In = [ I[o] for o in order ]
-		
 	newT = np.reshape( np.asarray(newC), In )
-	
 	neworder = [ order.index(i) for i in range(N) ]	
 	
 	if mod != 0 :
-
 		newT = swap(newT, neworder)
 		
 	return newT
-	
 	
 def swap(T, order):
 	I = T.shape
 	N = len(I)
 	
 	if( len(order) != N ):
-		raise ValueError("Invalid swap order");
+		raise ValueError("Invalid swap order")
 	
 	if( type(order) == list ):
 		order = np.asarray(order)
@@ -205,6 +167,25 @@ def refold_old(C, mod, I):
 		
 	return T
 	
+def unfold_old(T, mod):
+	I = T.shape
+	order = len(I)
+
+	N = I[mod];
+	M = 1;
+
+	for i in range(order):
+		if not i==mod:
+			M = M*I[i];
+			
+	C = np.zeros( (N,M) , dtype='float64')
+	for idx in np.ndindex(I):
+		i = idx[mod]
+		j = getJ(idx, mod, I)
+		
+		C[i,j]=T[idx]
+		
+	return C
 	
 def getJ(idAct, mod, I):
 	order = len(I)

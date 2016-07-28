@@ -2,6 +2,7 @@ import nimfa
 import math
 
 import numpy as np
+from sklearn.decomposition import TruncatedSVD
 
 import patefy
 import patefy.utils.multlinalg as MLA
@@ -61,7 +62,7 @@ class Alttucker(object):
 		self.C = TCn
 
 	def error(self):
-		D = self.T - MLA.tucker_operator2( self.C, self.B );
+		D = self.T - MLA.tucker_operator( self.C, self.B );
 		return MLA.norm( D )/MLA.norm(self.T)
 	
 	def error_old(self):
@@ -71,12 +72,10 @@ class Alttucker(object):
 		result = 0
 		Tn = 0
 
-		for idAct in MLA.TensorIterator(I):
+		for idAct in np.ndindex(I):
 			Til = 0
 			for coreIdAct in MLA.TensorIterator(R):
 				cr = self.C[coreIdAct]
-				#print idAct
-				#print coreIdAct
 				for n in range(N):
 					cr = cr*(self.B[n][ tuple([idAct[n] ,coreIdAct[n]]) ])
 				
@@ -104,9 +103,56 @@ class Alttucker(object):
 			self.B[i]=Bpi
 
 			Cp = np.zeros( self.R, dtype='float64')
-			for idAct in MLA.TensorIterator(self.R):
+			for idAct in np.ndindex(tuple(self.R)):
 				idActOrd = tuple([ pivOrder[i][idAct[i]] for i in range(len(pivOrder)) ])
 
 				Cp[idAct]=self.C[idActOrd]
 				
 		self.C = Cp;
+
+class HOSVD(object):
+	
+	def __init__(self, T, facts, ConstrF):
+		self.T = T
+		self.C = None
+		self.B = None
+		self.R = facts
+		self.I = T.shape # talvez mudar I e N para uma superclasse Tensor
+		self.N = len(T.shape)
+		self.constrB = ConstrF
+	
+	def __call__(self, kmax = 10):
+		T = self.T
+		B = list()
+		I = self.I
+		R = self.R
+		N = len(I)
+
+		# Inicialization
+		G = np.random.rand( *R )
+		B = [ np.random.rand( *[I[n], R[n]] ) for n in range(N) ]
+		
+		for k in range(kmax):
+			order = range(1,N)
+			B_order = [ np.transpose(B[i]) for i in order ]
+			for n in range(N):
+				svd = TruncatedSVD(n_components=R[n], random_state=42)				
+				
+				X = MLA.tucker_operator( T, B_order, order )
+				Y = MLA.unfold(X, n)
+			
+				svd.fit(Y.transpose())
+				
+				B[n] = svd.components_.transpose()
+				if n < N-1 :
+					order[n]=n
+					B_order[n] = B[n].transpose()
+				
+			G = MLA.tucker_operator( T, [ b.transpose() for b in B] )
+			
+		self.C = G
+		self.B = B
+			
+	def error(self):
+		D = self.T - MLA.tucker_operator( self.C, self.B );
+		return MLA.norm( D )/MLA.norm(self.T)
