@@ -9,6 +9,8 @@ import patefy.utils.multlinalg as MLA
 from patefy.models.tucker import TKD
 
 from numpy import linalg as LA
+
+import warnings
 	
 class Alttucker(TKD):
 		
@@ -21,12 +23,9 @@ class Alttucker(TKD):
 			constr = self.constrB[n]
 			Rn = self.R[n]
 			
-			print("modo "+str(n))
+			#print("modo "+str(n))
 			if constr >= 0 :
-				print("Constr == "+str(constr)+" ; R_i == "+str(Rn)+"\n")
-				print(".")
 				Cn = MLA.unfold(TCn,n)
-				print(".")
 				if constr == 0:
 					# Nonnegativity constraint
 					In[n] = int(Rn)
@@ -47,7 +46,7 @@ class Alttucker(TKD):
 						H[k,:] = H[k,:]*nBk
 
 					B.append(Bi)
-					print "."
+					#print "."
 					TCn = MLA.refold(H, n, tuple(In))
 
 		self.B = B
@@ -65,7 +64,7 @@ class ALSNTD(TKD):
 		# ---------------  Inicialization of B and C   --------------- #
 		for n in range(N):
 			Cn = MLA.unfold(T, n)
-			nmf = nimfa.Nmf(Cn, seed="random_vcol", max_iter=100, rank=R[n], update='euclidean', objective='fro')			
+			nmf = nimfa.Nmf(Cn, seed="random", max_iter=200, rank=R[n], update='euclidean', objective='fro')			
 			nmf_fit = nmf()
 			B.append(nmf_fit.basis())
 			
@@ -76,10 +75,11 @@ class ALSNTD(TKD):
 
 		G = MLA.tucker_operator( T,[ LA.pinv(b) for b in B ] )
 		G[ G < 0 ] = 0
-		
+		G0 = G
 		# --------------- Run de alternating algorithm --------------- #
 		for k in range(kmax):
 			order = range(1,N)
+			#print k
 			B_order = [ B[i] for i in order ]
 			for n in range(N):
 				X = MLA.tucker_operator( G, B_order, order)
@@ -89,7 +89,7 @@ class ALSNTD(TKD):
 				
 				Cn = MLA.unfold(T, n)
 				
-				nmf = nimfa.Nmf(Cn, seed="fixed", W=np.asarray(init_W), H=np.asarray(init_H), max_iter=50, rank=R[n], update='euclidean', objective='fro')		
+				nmf = nimfa.Nmf(Cn, seed="fixed", W=np.asarray(init_W), H=np.asarray(init_H), max_iter=200, rank=R[n], update='euclidean', objective='fro')
 				nmf_fit = nmf()
 				
 				B[n] = nmf_fit.basis()
@@ -97,17 +97,28 @@ class ALSNTD(TKD):
 				for k in range(R[n]): 
 					bk = B[n][:,k]
 					nBk = LA.norm(bk, 1)
-					B[n][:,k] = B[n][:,k]/nBk
-				
+					
+					if nBk == float('Inf'):
+						warnings.warn("Metodo divergiu.\n")
+						self.err = float('Inf')
+						return
+					elif nBk > 1e-8:
+						B[n][:,k] = B[n][:,k]/nBk
+						
 				if n < N-1 :
 					order[n]=n
 					B_order[n] = B[n]
 			
 			G = MLA.tucker_operator( T,[ LA.pinv(b) for b in B ] )
 			G[ G < 0 ] = 0
-
+			
+			G0 = G
+			if LA.norm( G - G0 )/LA.norm(G) < 10e-8:
+				break
+			
 		self.C = G
 		self.B = B
+		self.err = None		
 
 class HOOI(TKD):
 	
@@ -153,11 +164,17 @@ class HOSVD(TKD):
 		R = self.R
 		N = len(I)
 
-		for n in range(N):			
+		print R
+		for n in range(N):
+			print n			
 			Y = MLA.unfold(T, n)
-			
-			svd = TruncatedSVD(n_components=R[n], random_state=42)
-			svd.fit(np.transpose(Y))
+			print Y.shape, R[n]
+			svd = TruncatedSVD(n_components=R[n], random_state=0)
+			print "transpondo"
+			Y = np.transpose(Y)
+			print "otimizando"
+			svd.fit(Y)
+			print svd.components_.shape
 			B.append(np.transpose(svd.components_))
 
 		G = MLA.tucker_operator( T, [ np.transpose(b) for b in B] )
