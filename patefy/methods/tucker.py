@@ -54,6 +54,61 @@ class Alttucker(TKD):
 		self.C = TCn
 		self.err = None
 
+class ALSNTD(TKD):
+	def __call__(self, kmax = 10):
+		T = self.T
+		I = self.I
+		R = self.R
+		B = list()
+		N = len(I)
+		
+		# ---------------  Inicialization of B and C   --------------- #
+		for n in range(N):
+			Cn = MLA.unfold(T, n)
+			nmf = nimfa.Nmf(Cn, seed="random_vcol", max_iter=100, rank=R[n], update='euclidean', objective='fro')			
+			nmf_fit = nmf()
+			B.append(nmf_fit.basis())
+			
+			for k in range(R[n]): 
+				bk = B[n][:,k]
+				nBk = LA.norm(bk, 1)
+				B[n][:,k] = B[n][:,k]/nBk
+
+		G = MLA.tucker_operator( T,[ LA.pinv(b) for b in B ] )
+		G[ G < 0 ] = 0
+		
+		# --------------- Run de alternating algorithm --------------- #
+		for k in range(kmax):
+			order = range(1,N)
+			B_order = [ B[i] for i in order ]
+			for n in range(N):
+				X = MLA.tucker_operator( G, B_order, order)
+				init_H = MLA.unfold(X, n)
+				In = B[n].shape
+				init_W = B[n]
+				
+				Cn = MLA.unfold(T, n)
+				
+				nmf = nimfa.Nmf(Cn, seed="fixed", W=np.asarray(init_W), H=np.asarray(init_H), max_iter=50, rank=R[n], update='euclidean', objective='fro')		
+				nmf_fit = nmf()
+				
+				B[n] = nmf_fit.basis()
+				
+				for k in range(R[n]): 
+					bk = B[n][:,k]
+					nBk = LA.norm(bk, 1)
+					B[n][:,k] = B[n][:,k]/nBk
+				
+				if n < N-1 :
+					order[n]=n
+					B_order[n] = B[n]
+			
+			G = MLA.tucker_operator( T,[ LA.pinv(b) for b in B ] )
+			G[ G < 0 ] = 0
+
+		self.C = G
+		self.B = B
+
 class HOOI(TKD):
 	
 	def __call__(self, kmax = 10):

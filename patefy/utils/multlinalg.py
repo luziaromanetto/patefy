@@ -47,9 +47,9 @@ def tucker_operator(core, facts, order = None):
 	
 	if order is None:
 		order = range(N)			
-			
+	
 	if len(facts) != len(order):
-		raise ValueError("Invalid number of factors")
+		raise ValueError("Invalid number of factors", len(facts), len(order))
 			
 	for n in range(len(order)):
 		if facts[n].shape[1] != R[order[n]] :

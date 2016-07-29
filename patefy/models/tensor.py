@@ -24,6 +24,18 @@ class Tensor(object):
 		self.decomposition =  NTD.Alttucker(self.data, factors, rest)
 		self.decomposition()
 
+	def alstkd(self, factors, rest):
+		self.decomposition =  NTD.ALSNTD(self.data, factors, rest)
+		self.decomposition( 1000 )
+
+	def hooi(self, factors, rest):
+		self.decomposition =  NTD.HOOI(self.data, factors, rest)
+		self.decomposition()		
+		
+	def hosvd(self, factors, rest):
+		self.decomposition =  NTD.HOSVD(self.data, factors, rest)
+		self.decomposition()
+		
 	def read_relational_data(self, directory, fileValues, fileNames):
 		self.order = len(fileNames)
 
