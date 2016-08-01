@@ -157,7 +157,7 @@ class HOOI(TKD):
 
 class HOSVD(TKD):
 	# Original Tucker method
-	def __call__(self):		
+	def __call__(self):
 		T = self.T
 		B = list()
 		I = self.I
