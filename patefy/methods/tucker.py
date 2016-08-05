@@ -164,17 +164,11 @@ class HOSVD(TKD):
 		R = self.R
 		N = len(I)
 
-		print R
 		for n in range(N):
-			print n			
 			Y = MLA.unfold(T, n)
-			print Y.shape, R[n]
-			svd = TruncatedSVD(n_components=R[n], random_state=0)
-			print "transpondo"
+			svd = TruncatedSVD(n_components=R[n], random_state=42)
 			Y = np.transpose(Y)
-			print "otimizando"
 			svd.fit(Y)
-			print svd.components_.shape
 			B.append(np.transpose(svd.components_))
 
 		G = MLA.tucker_operator( T, [ np.transpose(b) for b in B] )

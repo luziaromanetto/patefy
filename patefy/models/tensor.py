@@ -82,11 +82,13 @@ class Tensor(object):
 		T='tensor'
 		D='decomposition'
 		data[T]=dict()
+
 		data[T]['order']=self.order
 		data[T]['shape']=self.shape
 		data[T]['modesName']=self.modesName
 		data[T]['modesDimensionName']=self.modesDimensionName
 		data[T][D]=dict()
+		data[T][D]['erro']=self.decomposition.error()
 		data[T][D]['R']=self.decomposition.R
 		data[T][D]['B']=[x.tolist() for x in self.decomposition.B]
 		data[T][D]['C']=[x.tolist() for x in self.decomposition.C]
