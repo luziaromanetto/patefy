@@ -9,7 +9,7 @@ import numpy as np
 #  Ultima atualizacao 24 de julho de 2016
 import json
 
-import patefy.methods.tucker as NTD
+import patefy.methods.tucker as TKD
 
 class Tensor(object):
 	def __init__(self):
@@ -20,21 +20,23 @@ class Tensor(object):
 		self.data = None
 		self.decomposition = None
     
-	def tkd(self, factors, rest):
-		self.decomposition =  NTD.Alttucker(self.data, factors, rest)
-		self.decomposition()
-
-	def alstkd(self, factors, rest):
-		self.decomposition =  NTD.ALSNTD(self.data, factors, rest)
-		self.decomposition( 1000 )
-
-	def hooi(self, factors, rest):
-		self.decomposition =  NTD.HOOI(self.data, factors, rest)
-		self.decomposition()		
-		
-	def hosvd(self, factors, rest):
-		self.decomposition =  NTD.HOSVD(self.data, factors, rest)
-		self.decomposition()
+	def make_decomposition(self, factors, method, options = None ):
+		# Chose the method
+		if method == "ALTNTD":
+			self.decomposition =  TKD.ALTNTD(self.data, factors)
+		elif method == "ALSNTD":
+			self.decomposition =  TKD.ALSNTD(self.data, factors)
+		elif method == "HOOI":
+			self.decomposition =  TKD.HOOI(self.data, factors)
+		elif method == "HOOI":
+			self.decomposition =  TKD.HOSVD(self.data, factors)
+			
+		# Make the decomposition
+		if options is None:
+			self.decomposition()
+		else:
+			self.decomposition(options)
+			
 		
 	def read_relational_data(self, directory, fileValues, fileNames):
 		self.order = len(fileNames)

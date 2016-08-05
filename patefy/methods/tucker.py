@@ -12,7 +12,7 @@ from numpy import linalg as LA
 
 import warnings
 	
-class Alttucker(TKD):
+class ALTNTD(TKD):
 		
 	def __call__(self):
 		TCn = self.T
@@ -20,34 +20,28 @@ class Alttucker(TKD):
 		In = list(self.I)
 		
 		for n in range(self.N):
-			constr = self.constrB[n]
 			Rn = self.R[n]
+			Cn = MLA.unfold(TCn,n)
+			In[n] = int(Rn)
 			
-			#print("modo "+str(n))
-			if constr >= 0 :
-				Cn = MLA.unfold(TCn,n)
-				if constr == 0:
-					# Nonnegativity constraint
-					In[n] = int(Rn)
-					
-					# Inicialization options random_vcol, random, random_c, nnsvd
-					nmf = nimfa.Nmf(Cn, seed="random_vcol", max_iter=200, rank=Rn, update='euclidean', objective='fro')
-					nmf_fit = nmf()
+			# Inicialization options random_vcol, random, random_c, nnsvd
+			nmf = nimfa.Nmf(Cn, seed="random_vcol", max_iter=200, rank=Rn, update='euclidean', objective='fro')
+			nmf_fit = nmf()
 
-					Bi = nmf_fit.basis()
-					H = nmf_fit.coef()
+			Bi = nmf_fit.basis()
+			H = nmf_fit.coef()
 
-					for k in range(Rn): 
-						bk = Bi[:,k]
-						hk = H[k,:]
+			for k in range(Rn): 
+				bk = Bi[:,k]
+				hk = H[k,:]
 
-						nBk = LA.norm(bk, 1)
-						Bi[:,k] = Bi[:,k]/nBk
-						H[k,:] = H[k,:]*nBk
+				nBk = LA.norm(bk, 1)
+				Bi[:,k] = Bi[:,k]/nBk
+				H[k,:] = H[k,:]*nBk
 
-					B.append(Bi)
-					#print "."
-					TCn = MLA.refold(H, n, tuple(In))
+			B.append(Bi)
+			#print "."
+			TCn = MLA.refold(H, n, tuple(In))
 
 		self.B = B
 		self.C = TCn
