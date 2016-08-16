@@ -8,6 +8,7 @@ import numpy as np
 #  2015: Luzia de Menezes Romanetto
 #  Ultima atualizacao 24 de julho de 2016
 import json
+import sys
 
 import patefy.methods.tucker as TKD
 
@@ -19,7 +20,7 @@ class Tensor(object):
 		self.modesDimensionName = None
 		self.data = None
 		self.decomposition = None
-    
+		
 	def make_decomposition(self, factors, method, options = None ):
 		# Chose the method
 		if method == "ALTNTD":
@@ -37,10 +38,12 @@ class Tensor(object):
 		else:
 			self.decomposition(options)
 			
-		
-	def read_relational_data(self, directory, fileValues, fileNames):
-		self.order = len(fileNames)
+	def read_relational_data(self, directory, order):
+		self.order = order
 
+		fileValues = 'vals.tsv'
+		fileNames=['mt.tsv'] + ['m'+str(i)+'.tsv' for i in range(1,order) ]
+    	
 		self.modesName = []
 		fin = open(directory+'/names.tsv');
 		for line in fin:
