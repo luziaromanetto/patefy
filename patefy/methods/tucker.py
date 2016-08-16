@@ -135,7 +135,6 @@ class HOOI(TKD):
 				
 				X = MLA.tucker_operator( T, B_order, order )
 				Y = MLA.unfold(X, n)
-			
 				svd.fit(np.transpose(Y))
 				
 				B[n] = np.transpose(svd.components_)

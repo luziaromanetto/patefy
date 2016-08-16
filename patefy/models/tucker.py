@@ -29,7 +29,7 @@ class TKD(object):
 
 			for j in range(len(pivOrder[i])):
 				for k in range(len(self.B[i])):
-					Bpi[k][j] = Bi[k][pivOrder[i][j]] 
+					Bpi[k][j] = Bi[k][pivOrder[i][j]]
 
 			self.B[i]=Bpi
 

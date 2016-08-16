@@ -23,6 +23,9 @@ class Tensor(object):
 		
 	def make_decomposition(self, factors, method, options = None ):
 		# Chose the method
+		if len(factors) != self.order:
+			raise ValueError("Invalid number of factors ", len(facts)," vs " ,self.order)
+			
 		if method == "ALTNTD":
 			self.decomposition =  TKD.ALTNTD(self.data, factors)
 		elif method == "ALSNTD":
