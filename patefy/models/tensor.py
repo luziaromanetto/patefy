@@ -47,41 +47,51 @@ class Tensor(object):
 		fileValues = 'vals.tsv'
 		fileNames=['mt.tsv'] + ['m'+str(i)+'.tsv' for i in range(1,order) ]
     	
+    	# Read the mode name
 		self.modesName = []
 		fin = open(directory+'/names.tsv');
 		for line in fin:
 			data = line.rstrip().decode('utf-8').split('\t')
 			self.modesName.append( data[1].encode('utf-8') )
 		fin.close();
-
-		# Read the mode name
+		
+		# Read the dimensions name for each mode
 		self.shape = []
 		self.modesDimensionName = []
 
-		#modesDimensionCode = []
+		codeConvertion = []
 		for fileName in fileNames:
 			fin = open(directory+'/'+fileName);
 
-			featureName = []
-			#featureCode = []
+			CodeXName = dict()
 			for line in fin:
 				data = line.rstrip().decode('utf-8').split('\t')
-				featureName.append( data[1].encode('utf-8') )
-				#featureCode.append( int(data[0]) )
+				CodeXName[int(data[0])] = data[1].encode('utf-8')
 
-			self.shape.append( len(featureName ) )
+			self.shape.append( len(CodeXName) )
+			
+			keys = CodeXName.keys()
+			keys.sort()
+			
+			featureName = []
+			for i in range(len(CodeXName)):
+				key = keys[i]
+				featureName.append( CodeXName[key] )
+				CodeXName[key] = i
+				
+			codeConvertion.append( CodeXName )
 			self.modesDimensionName.append(featureName)
-			#modesDimensionCode.append(featureCode)
 			fin.close()
 		
 		# Read the entries
 		fin = open(directory+'/'+fileValues);
 		self.data = np.zeros(self.shape);
 
-		print self.shape
 		for line in fin:
 			entries = line.split()
 			ids = [ int(v) for v in entries[0:self.order] ]
+			ids = [ codeConvertion[i][ids[i]] for i in range(self.order) ]
+			
 			self.data[tuple(ids)] = float(entries[self.order])
 
 	def write_json(self,fileName):

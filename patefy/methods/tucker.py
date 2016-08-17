@@ -23,9 +23,9 @@ class ALTNTD(TKD):
 			Rn = self.R[n]
 			Cn = MLA.unfold(TCn,n)
 			In[n] = int(Rn)
-			
-			# Inicialization options random_vcol, random, random_c, nnsvd
-			nmf = nimfa.Nmf(Cn, seed="random_vcol", max_iter=200, rank=Rn, update='euclidean', objective='fro')
+		
+			# Inicialization options random_vcol, random, random_c, nndsvd
+			nmf = nimfa.Nmf(Cn, seed="nndsvd", max_iter=200, rank=Rn, update='euclidean', objective='fro')
 			nmf_fit = nmf()
 
 			Bi = nmf_fit.basis()
