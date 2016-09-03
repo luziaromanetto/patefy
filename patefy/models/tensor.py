@@ -13,12 +13,21 @@ import sys
 import patefy.methods.tucker as TKD
 
 class Tensor(object):
+	def __init__(self, data = None):
+		if data is None:
+			self.data = None
+			self.order = None
+			self.shape = None
+		else:
+			self.data = data
+			self.shape = data.shape
+			self.order = len(data.shape)
+
+class METATensor(Tensor):
 	def __init__(self):
-		self.order = None
-		self.shape = None
+		Tensor.__init__(self)
 		self.modesName = None
 		self.modesDimensionName = None
-		self.data = None
 		self.decomposition = None
 		
 	def make_decomposition(self, factors, method, options = None ):
