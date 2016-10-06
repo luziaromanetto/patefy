@@ -108,6 +108,7 @@ class METATensor(Tensor):
         T='tensor'
         D='decomposition'
         data[T]=dict()
+        self.decomposition.track_unique_paths()
 
         data[T]['order']=self.order
         data[T]['shape']=self.shape
@@ -118,6 +119,7 @@ class METATensor(Tensor):
         data[T][D]['R']=self.decomposition.R
         data[T][D]['B']=[x.tolist() for x in self.decomposition.B]
         data[T][D]['C']=[x.tolist() for x in self.decomposition.C]
+        data[T][D]['uniquePaths'] = self.decomposition.uniquePaths
         with open(fileName,'w') as f:
             json.dump(data,f) 
 

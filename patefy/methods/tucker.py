@@ -25,7 +25,7 @@ class ALTNTD(TKD):
             In[n] = int(Rn)
 
             # Inicialization options random_vcol, random, random_c, nndsvd
-            nmf = nimfa.Nmf(Cn, seed="random_vcol", max_iter=600, rank=Rn, update='euclidean', objective='fro')
+            nmf = nimfa.Nmf(Cn, seed="random", max_iter=600, rank=Rn, update='euclidean', objective='fro')
             nmf_fit = nmf()
 
             Bi = nmf_fit.basis()

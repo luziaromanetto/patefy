@@ -10,6 +10,7 @@ class TKD(object):
         self.I = T.shape
         self.N = len(T.shape)
         self.err = None
+        self.uniquePaths = None
         
     def error(self):
         if self.err is None:
@@ -41,3 +42,23 @@ class TKD(object):
                 
         self.C = Cp;
 
+    def track_unique_paths(self):
+        R = self.R
+        C = self.C
+        norm = np.sum(C)
+        
+        pathMap = dict()
+        for Ri in np.ndindex( tuple(R) ):
+            if C[Ri]/norm > 10e-3 :
+                pathMap[ Ri[1:] ] = pathMap.get(Ri[1:], [])+ [ Ri ]
+            else: 
+                C[Ri]=0;
+        
+        self.uniquePaths = [[]]*R[0]
+        for key in pathMap:
+            if len(pathMap[key]) == 1 :
+                #print key
+                #print pathMap[key][0][0]
+                self.uniquePaths[pathMap[key][0][0]] = self.uniquePaths[pathMap[key][0][0]]+ [(pathMap[key][0],C[pathMap[key][0]]/norm)]
+                
+        #print self.uniquePaths
