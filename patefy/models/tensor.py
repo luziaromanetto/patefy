@@ -1,13 +1,13 @@
-import sys
-import numpy as np
-
 #!/usr/bin/env python 
 # encoding: utf-8
 #
 #  Patefy project
 #  2015: Luzia de Menezes Romanetto
-import json
 import sys
+import numpy as np
+
+import json
+from StringIO import StringIO
 
 import patefy.methods.tucker as TKD
 
@@ -28,7 +28,7 @@ class METATensor(Tensor):
         self.modesName = None
         self.modesDimensionName = None
         self.decomposition = None
-        
+
     def make_decomposition(self, factors, method, options = None ):
         # Chose the method
         if len(factors) != self.order:
@@ -123,3 +123,8 @@ class METATensor(Tensor):
         with open(fileName,'w') as f:
             json.dump(data,f) 
 
+    def read_json(self, fileName):
+        with open(fileName,'r') as f:
+            dictt = json.load(f)
+        
+        

@@ -54,11 +54,11 @@ class TKD(object):
             else: 
                 C[Ri]=0;
         
-        self.uniquePaths = [[]]*R[0]
+        self.uniquePaths = []
         for key in pathMap:
             if len(pathMap[key]) == 1 :
                 #print key
                 #print pathMap[key][0][0]
-                self.uniquePaths[pathMap[key][0][0]] = self.uniquePaths[pathMap[key][0][0]]+ [(pathMap[key][0],C[pathMap[key][0]]/norm)]
+                self.uniquePaths.append(pathMap[key][0])
                 
         #print self.uniquePaths
