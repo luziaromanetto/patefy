@@ -9,7 +9,8 @@ import numpy as np
 import json
 from StringIO import StringIO
 
-import patefy.methods.tucker as TKD
+import patefy.methods.tucker as mtkd
+import patefy.models.tucker as ttkd
 
 class Tensor(object):
     def __init__(self, data = None):
@@ -35,20 +36,20 @@ class METATensor(Tensor):
             raise ValueError("Invalid number of factors ", len(facts)," vs " ,self.order)
             
         if method == "ALTNTD":
-            self.decomposition =  TKD.ALTNTD(self.data, factors)
+            self.decomposition =  mtkd.ALTNTD(self.data, factors)
         elif method == "ALSNTD":
-            self.decomposition =  TKD.ALSNTD(self.data, factors)
+            self.decomposition =  mtkd.ALSNTD(self.data, factors)
         elif method == "HOOI":
-            self.decomposition =  TKD.HOOI(self.data, factors)
+            self.decomposition =  mtkd.HOOI(self.data, factors)
         elif method == "HOOI":
-            self.decomposition =  TKD.HOSVD(self.data, factors)
-            
+            self.decomposition =  mtkd.HOSVD(self.data, factors)
+        
         # Make the decomposition
         if options is None:
             self.decomposition()
         else:
             self.decomposition(options)
-            
+        
     def read_relational_data(self, directory, order):
         self.order = order
 
@@ -126,5 +127,16 @@ class METATensor(Tensor):
     def read_json(self, fileName):
         with open(fileName,'r') as f:
             dictt = json.load(f)
+    
+        T='tensor'
+        D='decomposition'
+        
+        self.data = None
+        self.order = dictt[T]['order']
+        self.shape = dictt[T]['shape']
+        self.modesName = dictt[T]['modesName']
+        self.modesDimensionName = dictt[T]['modesDimensionName']
+        self.decomposition = ttkd([],[])
+        
         
         
