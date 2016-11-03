@@ -121,22 +121,37 @@ class METATensor(Tensor):
         data[T][D]['B']=[x.tolist() for x in self.decomposition.B]
         data[T][D]['C']=[x.tolist() for x in self.decomposition.C]
         data[T][D]['uniquePaths'] = self.decomposition.uniquePaths
+        data[T][D]['pathDistances'] = [x.tolist() for x in self.decomposition.pathDistances] if self.decomposition.pathDistances is not None else 0
+        data[T][D]['pathProjection'] = [x.tolist() for x in self.decomposition.pathProjection] if self.decomposition.pathProjection is not None else 0
+        
         with open(fileName,'w') as f:
             json.dump(data,f) 
+        
 
     def read_json(self, fileName):
         with open(fileName,'r') as f:
-            dictt = json.load(f)
-    
+            data = json.load(f)
+        
         T='tensor'
         D='decomposition'
         
         self.data = None
-        self.order = dictt[T]['order']
-        self.shape = dictt[T]['shape']
-        self.modesName = dictt[T]['modesName']
-        self.modesDimensionName = dictt[T]['modesDimensionName']
-        self.decomposition = ttkd([],[])
+        self.order = data[T]['order']
+        self.shape = data[T]['shape']
+        self.modesName = data[T]['modesName']
+        self.modesDimensionName = data[T]['modesDimensionName']
         
+        error = data[T][D]['erro']
+        R = data[T][D]['R']
+        B = [np.asarray(b) for b in data[T][D]['B']]
+        C = np.asarray(data[T][D]['C'])
+        paths = data[T][D]['uniquePaths']
         
+        self.decomposition = ttkd.TKD()
+        self.decomposition.C = C
+        self.decomposition.B = B
+        self.decomposition.R = R
+        self.decomposition.N = self.order
+        self.decomposition.err = error
+        self.decomposition.uniquePaths = paths
         
