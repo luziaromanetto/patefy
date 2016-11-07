@@ -2,6 +2,7 @@ import numpy as np
 
 import patefy.utils.multlinalg as MLA
 import patefy.utils.tsne as tsne
+from sklearn.manifold import TSNE
 
 class TKD(object):
     def __init__(self, T=[], facts=[]):
@@ -24,6 +25,7 @@ class TKD(object):
         return self.err
 
     def pivotComponents(self, pivOrder, reverse=False):
+        # TODO : considerar os novos campos neste metodo; prod e distancia
 
         if( reverse == True ):
             pivOrder = [ p.reverse() for p in pivOrder ]
@@ -73,7 +75,9 @@ class TKD(object):
         prodR = np.asarray(R).prod();
         dist = np.zeros( [prodR, prodR] )
         
+        position = list()
         for id_i in np.ndindex( tuple(R) ):
+            position.append( id_i )
             for id_j in np.ndindex( tuple(R) ):
                 for m in range(N):
                     slc1 = [ slice(None,None,None) ]*N
@@ -91,6 +95,8 @@ class TKD(object):
             i += 1; j = 0
             
         self.pathDistances = dist
-        proj = tsne.tsne( dist )
+        model = TSNE(n_components=2, random_state=0, metric='precomputed')
+        np.set_printoptions(suppress=True)
+        proj = [ position , model.fit_transform(dist) ]
         self.pathProjection = proj
 
