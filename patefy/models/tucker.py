@@ -77,7 +77,7 @@ class TKD(object):
         
         position = list()
         for id_i in np.ndindex( tuple(R) ):
-            position.append( id_i )
+            position.append( list(id_i) )
             for id_j in np.ndindex( tuple(R) ):
                 for m in range(N):
                     slc1 = [ slice(None,None,None) ]*N
@@ -95,8 +95,11 @@ class TKD(object):
             i += 1; j = 0
             
         self.pathDistances = dist
-        model = TSNE(n_components=2, random_state=0, metric='precomputed')
+        model = TSNE(n_components=2, random_state=42, metric='precomputed')
         np.set_printoptions(suppress=True)
-        proj = [ position , model.fit_transform(dist) ]
-        self.pathProjection = proj
+        proj = model.fit_transform(dist)
+        
+        pathProj = [ ( position[i] , proj[i] ) for i in range(len(proj)) ]
+        
+        self.pathProjection = pathProj
 

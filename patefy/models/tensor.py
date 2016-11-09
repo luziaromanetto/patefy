@@ -121,8 +121,9 @@ class METATensor(Tensor):
         data[T][D]['B']=[x.tolist() for x in self.decomposition.B]
         data[T][D]['C']=[x.tolist() for x in self.decomposition.C]
         data[T][D]['uniquePaths'] = self.decomposition.uniquePaths
-        data[T][D]['pathDistances'] = [x.tolist() for x in self.decomposition.pathDistances] if self.decomposition.pathDistances is not None else 0
-        data[T][D]['pathProjection'] = [[x.tolist() for x in el] for el in self.decomposition.pathProjection] if self.decomposition.pathProjection is not None else 0
+        
+        # Inclui dados da projecao do core
+        data[T][D]['pathProjection'] = [ ( x[0] , x[1].tolist(), self.decomposition.C[x[0]] ) for x in self.decomposition.pathProjection ]
         
         with open(fileName,'w') as f:
             json.dump(data,f) 
