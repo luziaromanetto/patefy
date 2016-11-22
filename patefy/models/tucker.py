@@ -64,7 +64,7 @@ class TKD(object):
         for key in pathMap:
             if len(pathMap[key]) == 1 :
                 self.uniquePaths.append(pathMap[key][0])
-            
+
     def build_path_distance(self):
         R = self.R
         C = self.C
@@ -102,4 +102,3 @@ class TKD(object):
         pathProj = [ ( position[i] , proj[i] ) for i in range(len(proj)) ]
         
         self.pathProjection = pathProj
-
