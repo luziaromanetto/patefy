@@ -103,13 +103,13 @@ class METATensor(Tensor):
             
             self.data[tuple(ids)] = float(entries[self.order])
 
-    def write_json(self,fileName):
+    def write_json(self,fileName, cOp = 0):
         print("Saida JSON: "+fileName);
         data=dict()
         T='tensor'
         D='decomposition'
         data[T]=dict()
-        #self.decomposition.track_unique_paths()
+        self.decomposition.track_unique_paths()
 
         data[T]['order']=self.order
         data[T]['shape']=self.shape
@@ -119,7 +119,13 @@ class METATensor(Tensor):
         data[T][D]['erro']=self.decomposition.error()
         data[T][D]['R']=self.decomposition.R
         data[T][D]['B']=[x.tolist() for x in self.decomposition.B]
-        data[T][D]['C']=[x.tolist() for x in self.decomposition.C]
+        if cOp == 0 :
+            data[T][D]['C']=[x.tolist() for x in self.decomposition.C]
+        elif cOp == 1:
+            data[T][D]['C'] = []
+            for Ri in np.ndindex( self.decomposition.R ):
+                data[T][D]['C'].append([list(Ri),self.decomposition.C[Ri]])
+                
         data[T][D]['uniquePaths'] = self.decomposition.uniquePaths
         
         # Inclui dados da projecao do core
