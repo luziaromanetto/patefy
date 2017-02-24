@@ -54,7 +54,7 @@ class METATensor(Tensor):
         self.order = order
 
         fileValues = 'vals.tsv'
-        fileNames=['mt.tsv'] + ['m'+str(i)+'.tsv' for i in range(1,order) ]
+        fileNames=['m0.tsv'] + ['m'+str(i)+'.tsv' for i in range(1,order) ]
         
         # Read the mode name
         self.modesName = []
@@ -123,7 +123,8 @@ class METATensor(Tensor):
             data[T][D]['C']=[x.tolist() for x in self.decomposition.C]
         elif cOp == 1:
             data[T][D]['C'] = []
-            for Ri in np.ndindex( self.decomposition.R ):
+            print self.decomposition.R
+            for Ri in np.ndindex( tuple(self.decomposition.R) ):
                 data[T][D]['C'].append([list(Ri),self.decomposition.C[Ri]])
                 
         data[T][D]['uniquePaths'] = self.decomposition.uniquePaths
