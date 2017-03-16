@@ -31,6 +31,7 @@ class METATensor(Tensor):
         self.decomposition = None
 
     def make_decomposition(self, factors, method, options = None ):
+        
         # Chose the method
         if len(factors) != self.order:
             raise ValueError("Invalid number of factors ", len(facts)," vs " ,self.order)
@@ -93,7 +94,7 @@ class METATensor(Tensor):
             fin.close()
         
         # Read the entries
-        fin = open(directory+'/'+fileValues);
+        fin = open(directory+'/'+fileValues)
         self.data = np.zeros(self.shape);
 
         for line in fin:
@@ -109,7 +110,6 @@ class METATensor(Tensor):
         T='tensor'
         D='decomposition'
         data[T]=dict()
-        self.decomposition.track_unique_paths()
 
         data[T]['order']=self.order
         data[T]['shape']=self.shape
@@ -126,15 +126,9 @@ class METATensor(Tensor):
             print self.decomposition.R
             for Ri in np.ndindex( tuple(self.decomposition.R) ):
                 data[T][D]['C'].append([list(Ri),self.decomposition.C[Ri]])
-                
-        data[T][D]['uniquePaths'] = self.decomposition.uniquePaths
-        
-        # Inclui dados da projecao do core
-        #data[T][D]['pathProjection'] = [ ( x[0] , x[1].tolist(), self.decomposition.C[x[0]] ) for x in self.decomposition.pathProjection ]
-        
+
         with open(fileName,'w') as f:
-            json.dump(data,f) 
-        
+            json.dump(data,f)
 
     def read_json(self, fileName):
         with open(fileName,'r') as f:
@@ -153,7 +147,6 @@ class METATensor(Tensor):
         R = data[T][D]['R']
         B = [np.asarray(b) for b in data[T][D]['B']]
         C = np.asarray(data[T][D]['C'])
-        paths = data[T][D]['uniquePaths']
         
         self.decomposition = ttkd.TKD()
         self.decomposition.C = C
