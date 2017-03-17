@@ -93,8 +93,9 @@ def kruskal_operator(sigma, facts):
     return T
 
 def hadamard(A, B):
+    # Element wise multiplication
     if A.shape != B.shape:
-        raise ValueError("The matrices have diferent sizes")
+        raise ValueError("The matrices have diferent shapes")
 
     return np.multiply(A, B)
 

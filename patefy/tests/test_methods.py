@@ -6,6 +6,17 @@ import patefy
 import patefy.methods.tucker as TKD
 
 class MLATester(unittest.TestCase):
+    def test_NTD(self):
+        I = [10, 50, 100]
+        R = [5, 3, 4]
+
+        T = np.random.rand( *I )
+        fit = TKD.NTD(T,R)
+        fit()
+        
+        print "testing NTD"
+
+    
     def test_ALSNTD(self):
         I = [10, 50, 100]
         R = [5, 3, 4]

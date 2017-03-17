@@ -18,9 +18,8 @@ class TKD(object):
         self.pathProjection = None
         
     def error(self):
-        if self.err is None:
-            self.err = MLA.norm(self.T - MLA.tucker_operator( self.C, self.B ));
-            self.err = self.err/MLA.norm(self.T)
+        self.err = MLA.norm(self.T - MLA.tucker_operator( self.C, self.B ));
+        self.err = self.err/MLA.norm(self.T)
             
         return self.err
 

@@ -12,6 +12,56 @@ from numpy import linalg as LA
 
 import warnings
 
+class NTD(TKD):
+    
+    def __call__(self):
+        N = self.N
+        I = list(self.I)
+        R = list(self.R)
+        X = self.T
+        
+        # Initialization
+        B = list()
+        C = np.random.rand(*R)
+        for n in range(N):
+            B = B + [np.random.rand(I[n], R[n])]
+            
+        # Multiplicative algorithm
+        for k in range(100):
+            Bn = list()
+            # incrementing factors
+            for n in range(N):
+                order = [m for m in range(N) if m!=n]
+                C_n = MLA.unfold(C, n)
+                
+                BtB_order = [np.dot(B[m].transpose(),B[m]) for m in order]
+                
+                SAA = MLA.tucker_operator( C, BtB_order, order)
+                SAA_n = MLA.unfold(SAA, n)
+                SAAS_n = np.dot(SAA_n, C_n.transpose())
+                ASS_n = np.dot(B[n], SAAS_n)
+                
+                Bt_order = [B[m].transpose() for m in order]
+                XS_n = MLA.tucker_operator( X, Bt_order, order)
+                XS_n = np.dot(MLA.unfold(XS_n, n), C_n.transpose() )
+                
+                Bn = Bn + [B[n]*(XS_n/ASS_n)]
+            
+            # increment core tensor
+            XAA = MLA.tucker_operator(X, [b.transpose() for b in B])
+            SAA = MLA.tucker_operator(C, [np.dot(b.transpose(),b) for b in B])
+            
+            Cn = C*XAA/SAA
+            
+            B = Bn
+            C = Cn
+            
+            self.B = Bn
+            self.C = Cn
+            
+            print self.error()
+            
+
 class ALTNTD(TKD):
 
     def __call__(self):
