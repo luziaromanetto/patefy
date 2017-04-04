@@ -21,11 +21,15 @@ class NTD(TKD):
         X = self.T
         
         # Initialization
+        epsilon = 10e-18
         B = list()
-        C = np.random.rand(*R)
+        dB = list()
+        C = np.random.rand(*R)*100
+        dC = np.ones(list(R))*epsilon
         for n in range(N):
             B = B + [np.random.rand(I[n], R[n])]
-            
+            dB = dB + [np.ones([I[n], R[n]])*epsilon]
+        
         # Multiplicative algorithm
         for k in range(100):
             Bn = list()
@@ -45,13 +49,13 @@ class NTD(TKD):
                 XS_n = MLA.tucker_operator( X, Bt_order, order)
                 XS_n = np.dot(MLA.unfold(XS_n, n), C_n.transpose() )
                 
-                Bn = Bn + [B[n]*(XS_n/ASS_n)]
+                Bn = Bn + [B[n]*(XS_n/(ASS_n+dB[n]))]
             
             # increment core tensor
             XAA = MLA.tucker_operator(X, [b.transpose() for b in B])
             SAA = MLA.tucker_operator(C, [np.dot(b.transpose(),b) for b in B])
             
-            Cn = C*XAA/SAA
+            Cn = C*XAA/(SAA+dC)
             
             B = Bn
             C = Cn
@@ -60,6 +64,8 @@ class NTD(TKD):
             self.C = Cn
             
             print self.error()
+            
+        print self.C
             
 
 class ALTNTD(TKD):

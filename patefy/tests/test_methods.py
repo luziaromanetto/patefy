@@ -10,7 +10,7 @@ class MLATester(unittest.TestCase):
         I = [10, 50, 100]
         R = [5, 3, 4]
 
-        T = np.random.rand( *I )
+        T = np.random.rand( *I )*10
         fit = TKD.NTD(T,R)
         fit()
         
